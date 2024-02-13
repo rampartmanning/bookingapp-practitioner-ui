@@ -1,19 +1,22 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 
-import { createRouter, createWebHashHistory } from 'vue-router'; // Import createRouter and createWebHashHistory from vue-router package
+import { createRouter, createWebHistory } from 'vue-router'; 
 import HomeView from './views/HomeView.vue';
+import CodeLookupView from './views/CodeLookupView.vue';
 
 const routes = [
-    { path: '/', component: HomeView, meta: { title: 'Home' } }
+    { path: '/', component: HomeView, meta: { title: 'Home' } },
+    { path: '/:pathMatch(.*)*', component: CodeLookupView, meta: { title: 'Code Lookup' } }
 ];
 
 const router = createRouter({
-    history: createWebHashHistory(), // Use createWebHashHistory instead of createWebHistory
+    history: createWebHistory(), 
     routes
 });
 
 router.beforeEach((to, from, next) => {
+    console.log("to", to);
     let title = '';
     if (to.meta.title) {
         title += to.meta.title + ' - ';
