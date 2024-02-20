@@ -33,7 +33,6 @@
         <div v-if="booking_practitioner&&booking">
           <p>Your Status: {{ booking_practitioner.current_status_label }}</p>
           <p>Address: {{  booking.address_string }}</p>
-          <p>Client Type: {{ booking.client_type_label }}</p>
           <p>Treatment: {{  booking.treatment_display_name }}</p>  
           <p>Created At: {{  formatDate(booking.created_at, 'PPpp') }}</p>
           <p>Preferred Service Date: {{ booking.preferred_service_date }}</p>
