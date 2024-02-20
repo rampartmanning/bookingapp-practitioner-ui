@@ -1,5 +1,25 @@
 <template>
     <v-container>
+      <v-app-bar density="compact">
+          <v-app-bar-title>{{code}}</v-app-bar-title>
+          <v-btn size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>          
+      </v-app-bar>
+
+      <!-- Decline Dialog -->
+      <v-dialog
+        v-model="showDeclineBooking"
+        width="auto"
+      >
+        <v-card>
+          <v-card-text>
+            <p>Are you sure you want to decline this booking?</p>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn color="primary" @click="declineBooking()">Decline</v-btn>
+            <v-btn @click="showDeclineBooking=false">Cancel</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>      
 
       <v-sheet width="1000">
 
@@ -11,15 +31,10 @@
         ></v-alert>
 
         <div v-if="booking_practitioner&&booking">
-          <h1>{{ code }}</h1>
-           
-          <p>Status: {{ booking_practitioner.current_status_label }}</p>
-
-          <h2>Booking Information</h2>
+          <p>Your Status: {{ booking_practitioner.current_status_label }}</p>
           <p>Address: {{  booking.address_string }}</p>
-          <p>Client Type: {{  booking.client_type }}</p>
+          <p>Client Type: {{ booking.client_type_label }}</p>
           <p>Treatment: {{  booking.treatment_display_name }}</p>  
-          <p>Treatment Category: {{  booking.treatment_category_display_name }}</p>
           <p>Created At: {{  formatDate(booking.created_at, 'PPpp') }}</p>
           <p>Preferred Service Date: {{ booking.preferred_service_date }}</p>
           <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
@@ -74,7 +89,9 @@ export default {
             googleMapsApiKey: settings.googleMapsApiKey,
             mapCenter: { "lat": null, "lng": null },
             mapMarkerOptions: { position: { "lat": null, "lng": null }, title: "Client Location" },
-            mapZoom: 14
+            mapZoom: 14,
+
+            showDeclineBooking: false 
         }
     },
     methods: {
@@ -105,7 +122,11 @@ export default {
       async loadRefresh() {
         await this.load();
         this.isLoading = false;
-      },       
+      },    
+      declineBooking() {
+        console.log("Handle Decline booking");
+
+      }   
     },
     mounted() {
         this.code = this.$route.path.replace("/", "");
