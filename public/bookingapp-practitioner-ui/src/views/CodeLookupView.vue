@@ -32,9 +32,9 @@
 
         <div v-if="booking_practitioner&&booking">
           <p>Your Status: {{ booking_practitioner.current_status_label }}</p>
+          <p>Response Required by: {{ formatRelative(booking_practitioner.expires_at, new Date()) }}</p>
           <p>Address: {{  booking.address_string }}</p>
           <p>Treatment: {{  booking.treatment_display_name }}</p>  
-          <p>Created At: {{  formatDate(booking.created_at, 'PPpp') }}</p>
           <p>Preferred Service Date: {{ booking.preferred_service_date }}</p>
           <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
           <p>Duration: {{ booking.duration_minutes }} mins</p>
@@ -67,7 +67,7 @@
 import axios from 'axios';
 import api from '@/api.js';
 import { GoogleMap, Marker } from "vue3-google-map";
-import { format as formatDate } from 'date-fns';
+import { formatRelative, format as formatDate } from 'date-fns';
 import settings from '@/settings.js';
 
 export default {
@@ -94,12 +94,16 @@ export default {
         }
     },
     methods: {
+      formatRelative,
       formatDate,
       async load() {
         let headers = await api.getApiHeaders();
         try {
           let response = await axios.get(api.getApiUrl('p/booking/by_code/' + this.code), { headers });
           this.booking_practitioner = response.data.booking_practitioner;
+          if(this.booking_practitioner.expires_at) {
+            this.booking_practitioner.expires_at = new Date(this.booking_practitioner.expires_at);
+          }
           this.booking = response.data.booking;
           this.mapCenter.lat = this.booking.lat;
           this.mapCenter.lng = this.booking.lng;
