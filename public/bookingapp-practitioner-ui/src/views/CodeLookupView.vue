@@ -1,8 +1,8 @@
 <template>
     <v-container>
       <v-app-bar density="compact">
-          <v-app-bar-title>{{code}}</v-app-bar-title>
-          <v-btn size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>          
+          <v-app-bar-title><code style="font-family: monospace;">{{ code }}</code></v-app-bar-title>
+          <v-btn v-if="booking_practitioner&&booking_practitioner.current_status == 'waiting_for_practitioner'" size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>          
       </v-app-bar>
 
       <!-- Decline Dialog -->
@@ -31,14 +31,24 @@
         ></v-alert>
 
         <div v-if="booking_practitioner&&booking">
-          <p>Your Status: {{ booking_practitioner.current_status_label }}</p>
-          <p>Response Required by: {{ formatRelative(booking_practitioner.expires_at, new Date()) }}</p>
+
+          <v-alert
+            type="info"
+            :text="'Status: ' + booking_practitioner.current_status_end_label + (booking_practitioner.current_status == 'waiting_for_practitioner' ? '. Response Required by ' + formatRelative(booking_practitioner.expires_at, new Date()) + '.' : '')"
+            variant="tonal"
+          ></v-alert>          
+
           <p>Address: {{  booking.address_string }}</p>
           <p>Treatment: {{  booking.treatment_display_name }}</p>  
-          <p>Preferred Service Date: {{ booking.preferred_service_date }}</p>
-          <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
           <p>Duration: {{ booking.duration_minutes }} mins</p>
-          <p>Client Notes: {{ booking.client_notes }}</p>
+
+          <div v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+
+            <p>Preferred Service Date: {{ booking.preferred_service_date }}</p>
+            <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>            
+            <p>Client Notes: {{ booking.client_notes }}</p>
+
+          </div>
 
           <GoogleMap
             :api-key="googleMapsApiKey"
