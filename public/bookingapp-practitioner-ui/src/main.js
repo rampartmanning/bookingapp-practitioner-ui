@@ -16,12 +16,13 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    console.log("to", to);
     let title = '';
-    if (to.meta.title) {
-        title += to.meta.title + ' - ';
+    if(to.meta.title === 'Code Lookup') {
+        title = to.href.replace('/','');    
+    } else {        
+        title = to.meta.title;
+        title += ' - Health Casa Practitioner Tool';
     }
-    title += 'Health Casa Practitioner Tool';
     document.title = title;
     next();
 });
