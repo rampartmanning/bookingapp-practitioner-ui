@@ -154,7 +154,7 @@ export default {
       async load() {
         let headers = await api.getApiHeaders();
         try {
-          let response = await axios.get(api.getApiUrl('p/booking/by_code/' + this.code), { headers });
+          let response = await axios.get(api.getApiUrl('p/booking-practitioner/by_code/' + this.code), { headers });
           this.booking_practitioner = response.data.booking_practitioner;
           if(this.booking_practitioner.expires_at) {
             this.booking_practitioner.expires_at = new Date(this.booking_practitioner.expires_at);
