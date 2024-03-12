@@ -1,69 +1,92 @@
 <template>
     <v-container>
-      <v-app-bar density="compact">
-          <v-app-bar-title><code style="font-family: monospace;">{{ code }}</code></v-app-bar-title>
-          <v-btn v-if="booking_practitioner&&booking_practitioner.current_status == 'waiting_for_practitioner'" size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>          
-      </v-app-bar>
-
-      <!-- Decline Dialog -->
-      <v-dialog
-        v-model="showDeclineBooking"
-        width="auto"
-      >
-        <v-card>
-          <v-card-text>
-            <p>Are you sure you want to decline this booking?</p>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" @click="declineBooking()">Decline</v-btn>
-            <v-btn @click="showDeclineBooking=false">Cancel</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>      
-
       <v-sheet width="1000">
-
+        <v-row>
+          <v-col cols="6" class="text-left">
+            <!-- Logo -->         
+            <v-img
+              src="https://static.wixstatic.com/media/3a7bcf_15f013d1aa5d4cc9927724881eeddf05~mv2.png/v1/fill/w_266,h_55,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/HealthCasa_Logo_Web%20No%20Bkgd_Left.png"
+              style="width: 266px;height:55px;"
+            ></v-img>
+          </v-col>
+          <v-col cols="6" class="text-right">
+            <code style="font-family: monospace;">{{ code }}</code>
+          </v-col>
+        </v-row>
+        
+        <!-- Alerts -->
         <v-alert
           v-if="showErrorAlert"
           type="error"
           title="Error"
           :text="'There was an error doing this operation. Message: ' + errorMessage"
         ></v-alert>
+        
 
-        <div v-if="booking_practitioner&&booking">
+        <div v-if="booking_practitioner&&booking" style="margin-top:10px;">
 
           <v-alert
             type="info"
-            :text="'Status: ' + booking_practitioner.current_status_end_label + (booking_practitioner.current_status == 'waiting_for_practitioner' ? '. Response Required by ' + formatRelative(booking_practitioner.expires_at, new Date()) + '.' : '')"
+            :text="'Status: ' + booking_practitioner.current_status_end_label + (booking_practitioner.current_status == 'waiting_for_practitioner' ? '. Respond by ' + formatRelative(booking_practitioner.expires_at, new Date()) + '.' : '')"
             variant="tonal"
           ></v-alert>          
 
-          <p>Address: {{  booking.address_string }}</p>
-          <p>Treatment: {{  booking.treatment_display_name }}</p>  
-          <p>Duration: {{ booking.duration_minutes }} mins</p>
+          <v-sheet style = 'margin-top:10px;'>
 
-          <div v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+            <v-btn v-if="booking_practitioner&&booking_practitioner.current_status == 'waiting_for_practitioner'" size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>          
 
-            <p>Preferred Service Date: {{ booking.preferred_service_date }}</p>
-            <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>            
-            <p>Client Notes: {{ booking.client_notes }}</p>
 
-          </div>
+            <h3 style = 'margin-top:10px;'>Booking Details</h3>
 
-          <GoogleMap
-            :api-key="googleMapsApiKey"
-            :center="mapCenter"
-            :zoom="mapZoom"
-            style="width: 100%; height: 600px; margin-top:10px;"
-            :options="{
-                disableDefaultUI: true,
-                zoomControl: true,
-                streetViewControl: true,
-                fullscreenControl: false
-            }">
-              <Marker :options="mapMarkerOptions" />
+            <!-- your options -->
 
-          </GoogleMap>
+            <v-table density="compact">
+              <tbody>
+                <tr>
+                  <td width = '25%'>Treatment</td>
+                  <td width = '75%'>{{ booking.treatment_display_name }}</td>
+                </tr>
+                <tr>
+                  <td>Duration</td>
+                  <td>{{ booking.duration_minutes }} mins</td>
+                </tr> 
+                <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                  <td>Preferred Service Date</td>
+                  <td>{{ booking.preferred_service_date }}</td>
+                </tr>
+                <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                  <td>Scheduling Preferences</td>
+                  <td>{{ booking.scheduling_preferences.join(", ") }}</td>
+                </tr>
+                <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                  <td>Client Notes</td>
+                  <td>{{ booking.client_notes }}</td>
+                </tr>               
+                <tr>
+                  <td>Address</td>
+                  <td>{{ booking.address_string }}
+                    <v-icon color="primary" @click="openInGoogleMaps()">mdi-open-in-new</v-icon>
+                  </td>
+                </tr>                
+              </tbody>
+            </v-table>
+
+            <GoogleMap
+              :api-key="googleMapsApiKey"
+              :center="mapCenter"
+              :zoom="mapZoom"
+              style="width: 100%; height: 600px; margin-top:10px;"
+              :options="{
+                  disableDefaultUI: true,
+                  zoomControl: true,
+                  streetViewControl: true,
+                  fullscreenControl: false
+              }">
+                <Marker :options="mapMarkerOptions" />
+
+            </GoogleMap>
+
+          </v-sheet>
 
 
         </div>
@@ -136,6 +159,9 @@ export default {
         await this.load();
         this.isLoading = false;
       },    
+      openInGoogleMaps() {
+        window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(this.booking.address_string), '_blank');
+      },
       declineBooking() {
         console.log("Handle Decline booking");
 
