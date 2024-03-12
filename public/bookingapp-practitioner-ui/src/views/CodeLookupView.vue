@@ -13,6 +13,26 @@
             <code style="font-family: monospace;">{{ code }}</code>
           </v-col>
         </v-row>
+
+        <!-- Decline Booking -->
+        <v-dialog v-model="showDeclineBooking" max-width="500">
+          <v-card>
+            <v-card-title>
+              Decline Booking
+            </v-card-title>
+            <v-card-text>
+              <v-textarea
+                v-model="declineReason"
+                label="Reason"
+                required
+              ></v-textarea>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn @click="showDeclineBooking = false">Cancel</v-btn>
+              <v-btn color="primary" @click="declineBooking">Decline</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         
         <!-- Alerts -->
         <v-alert
@@ -33,7 +53,7 @@
 
           <v-sheet style = 'margin-top:10px;'>
 
-            <v-btn v-if="booking_practitioner&&booking_practitioner.current_status == 'waiting_for_practitioner'" size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>          
+            <v-btn v-if="booking_practitioner.can_decline_practitioner" size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>          
 
 
             <h3 style = 'margin-top:10px;'>Booking Details</h3>
@@ -123,7 +143,9 @@ export default {
             mapMarkerOptions: { position: { "lat": null, "lng": null }, title: "Client Location" },
             mapZoom: 14,
 
-            showDeclineBooking: false 
+            // Decline Booking
+            declineReason: '',
+            showDeclineBooking: false
         }
     },
     methods: {
@@ -164,7 +186,7 @@ export default {
       },
       declineBooking() {
         console.log("Handle Decline booking");
-
+        this.showDeclineBooking = false;
       }   
     },
     mounted() {
