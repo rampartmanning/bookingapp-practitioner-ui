@@ -184,9 +184,21 @@ export default {
       openInGoogleMaps() {
         window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(this.booking.address_string), '_blank');
       },
-      declineBooking() {
-        console.log("Handle Decline booking");
+      async declineBooking() {
         this.showDeclineBooking = false;
+        try {
+          let headers = await api.getApiHeaders();
+          await axios.put(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + "/decline"), { reason: this.declineReason }, { headers });
+          this.loadRefresh();
+        } catch (error) {
+          console.error('Error:', error);
+          if (error.response && error.response.data.detail) {
+            this.errorMessage = error.response.data.detail;
+          } else {
+            this.errorMessage = 'Unable to decline booking.';
+          }
+          this.showErrorAlert = true;        
+        }
       }   
     },
     mounted() {
