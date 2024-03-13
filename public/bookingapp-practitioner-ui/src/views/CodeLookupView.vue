@@ -93,7 +93,7 @@
                 <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
 
 
-                <v-btn :disable="!canAddScheduleOption()" color="primary" @click="addScheduleOption">Submit Option</v-btn>
+                <v-btn style = 'margin-top:10px;' :disabled="!canAddScheduleOption()" color="primary" @click="addScheduleOption">Submit Option</v-btn>
 
               </v-col>
             </v-row>
@@ -381,8 +381,6 @@ export default {
           this.showErrorAlert = true;
         }
       },
-
-
       async loadRefresh() {
         await this.load();
         if(this.booking) {
@@ -414,7 +412,17 @@ export default {
         return this.addScheduleOption_scheduleDate && this.addScheduleOption_scheduleHour && this.addScheduleOption_scheduleMinute;
       },
 
-      // TODO: check dupes
+      hasExistingScheduleOptionAlreadyExists(dt) {
+        let matching = this.bookingScheduleOptions.find(option => {
+          let optionDate = new Date(option.schedule_date);
+          return optionDate.getTime() === dt.getTime();
+        });
+        if (matching) {
+          return true;
+        }
+        return false;
+      },
+
       async addScheduleOption() {
 
         let dt = new Date(this.addScheduleOption_scheduleDate);
@@ -424,14 +432,12 @@ export default {
         dt.setSeconds(0);
         dt.setMilliseconds(0);      
 
-        /*
         if(this.hasExistingScheduleOptionAlreadyExists(dt)) {
-          this.errorMessage = "A schedule option already exists for this date and time for this practitioner. Please select another date and time.";
+          this.errorMessage = "A schedule option already exists for this date and time. Please select another date and time.";
           this.showErrorAlert = true;
           this.hideShowAddScheduleOptionDialog();
           return;
         }
-        */
 
         let data = {
           schedule_date: api.prepareDateTime(dt)
@@ -441,6 +447,14 @@ export default {
         try {
           await axios.post(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/create-booking-schedule-option'), data, { headers });
           await this.loadRefresh();
+
+          // Reset 
+          this.addScheduleOption_scheduleDate = null;
+          this.addScheduleOption_scheduleHour = null;
+          this.addScheduleOption_scheduleMinute = null;
+
+
+
           // TODO: show confirm
           console.log("Good");
         } catch (error) {
