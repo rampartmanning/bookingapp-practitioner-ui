@@ -15,5 +15,9 @@ export default {
         month: '2-digit',
         day: '2-digit'
     });
-  }  
+  },
+  prepareDateTime(dt) {
+    let d = new Date(dt).toISOString();
+    return d.slice(0, -1) + '+00:00';
+  }
 }
