@@ -100,6 +100,56 @@
 
             </div>
 
+            <div style="margin-top:20px;" class = 'data-table-wrapper' v-if="bookingScheduleOptions.length">
+
+              <h3>Your Options</h3>
+
+              <v-data-table
+                :headers="scheduleOptions_headers"
+                :items="bookingScheduleOptions"
+                :sort-by="[{ key: 'schedule_date', order: 'asc' }]"
+                density="compact"
+                :items-per-page="100"
+              >
+              <template v-slot:bottom> </template>
+              <!-- eslint-disable-next-line -->
+              <template v-slot:item.schedule_date_date="{ item }">
+                  <code>{{ formatDate(item.schedule_date_date, 'PP') }}</code>
+              </template>
+              <!-- eslint-disable-next-line -->
+              <template v-slot:item.schedule_date_time="{ item }">
+                <code>{{ formatDate(item.schedule_date_time, 'p') }}</code>
+              </template>
+              <!-- eslint-disable-next-line -->
+              <template v-slot:item.schedule_date_end_time="{ item }">
+                <code>{{ formatDate(item.schedule_date_end, 'p') }}</code>
+              </template>
+              <!-- eslint-disable-next-line -->
+                <template v-slot:item.actions="{ item }">
+                  <!--
+                  <v-icon
+                    v-if="canEditBookingScheduleOption(item)"
+                    size="small"
+                    icon="mdi-pencil"
+                    class="me-2"
+                    @click="showEditScheduleOptionDialogForBookingScheduleOption(item)"
+                  >
+                  </v-icon>
+                  -->
+                   <!--
+                  <v-icon
+                    v-if="canDeclineBookingScheduleOption(item)"
+                    size="small"
+                    icon="mdi-thumb-down"
+                    class="me-2"
+                    @click="declineBookingScheduleOption(item)"
+                  >
+                  </v-icon>
+                  -->
+                  actions 
+                </template>                  
+              </v-data-table>
+            </div>
 
             <v-btn v-if="booking_practitioner.can_decline_practitioner" size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>
 
@@ -203,6 +253,41 @@ export default {
               allowed_scheduling_preferences: []
             },
 
+            bookingScheduleOptions: [],
+
+            scheduleOptions_headers: [
+            {
+              title: 'Date',
+              key: 'schedule_date_date',
+              sortable: true,
+              width: '20%'
+            },
+            {
+              title: 'Start',
+              key: 'schedule_date_time',
+              sortable: true,
+              width: '20%'
+            },
+            {
+              title: 'End',
+              key: 'schedule_date_end_time',
+              sortable: true,
+              width: '20%'
+            },
+            {
+              title: 'Option Status',
+              key: 'current_status_end_label',
+              sortable: true,
+              width: '20%'
+            },
+            {
+              title: 'Actions',
+              key: 'actions',
+              sortable: false,
+              align: 'end',
+              width: '20%'
+            }],            
+
             // Decline Booking
             declineReason: '',
             showDeclineBooking: false,
@@ -274,10 +359,35 @@ export default {
           this.showErrorAlert = true;
         }
       },
+      async loadScheduleOptions() {
+        let headers = await api.getApiHeaders();
+        try {
+          let response = await axios.get(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/list-booking-schedule-options'), { headers });
+          this.bookingScheduleOptions = response.data.booking_schedule_options;
+          this.bookingScheduleOptions = this.bookingScheduleOptions.map(option => {
+            option.schedule_date = new Date(option.schedule_date);
+            option.schedule_date_date = new Date(option.schedule_date); // for sorting
+            option.schedule_date_time = new Date(option.schedule_date); // for sorting
+            option.schedule_date_end = new Date(option.schedule_date_end);
+            return option;
+          });
+        } catch (error) {
+          console.error('Error:', error);
+          if (error.response && error.response.data.detail) {
+            this.errorMessage = error.response.data.detail;
+          } else {
+            this.errorMessage = 'Unable to get booking schedule options.';
+          }
+          this.showErrorAlert = true;
+        }
+      },
+
+
       async loadRefresh() {
         await this.load();
         if(this.booking) {
           await this.loadConfiguration();
+          await this.loadScheduleOptions();
         }
         this.isLoading = false;
       },    
