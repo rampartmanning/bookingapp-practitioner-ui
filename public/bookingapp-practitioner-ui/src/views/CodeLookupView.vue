@@ -81,7 +81,7 @@
                 <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
                   <td>Client Notes</td>
                   <td>{{ booking.client_notes }}</td>
-                </tr>               
+                </tr>
                 <tr>
                   <td>Address</td>
                   <td>{{ booking.address_string }}
