@@ -33,6 +33,22 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
+        <!-- Remove Option -->
+        <v-dialog v-model="showRemoveScheduleOption" max-width="500">
+          <v-card>
+            <v-card-title>
+              Remove Schedule Option
+            </v-card-title>
+            <v-card-text>
+              <p>Are you sure?</p>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn @click="showRemoveScheduleOption = false">Cancel</v-btn>
+              <v-btn color="primary" @click="removeScheduleOption()">Remove</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         
         <!-- Alerts -->
         <v-alert
@@ -126,27 +142,14 @@
               </template>
               <!-- eslint-disable-next-line -->
                 <template v-slot:item.actions="{ item }">
-                  <!--
                   <v-icon
                     v-if="canEditBookingScheduleOption(item)"
                     size="small"
-                    icon="mdi-pencil"
+                    icon="mdi-close"
                     class="me-2"
-                    @click="showEditScheduleOptionDialogForBookingScheduleOption(item)"
+                    @click="showRemoveScheduleOptionDialogForBookingScheduleOption(item)"
                   >
                   </v-icon>
-                  -->
-                   <!--
-                  <v-icon
-                    v-if="canDeclineBookingScheduleOption(item)"
-                    size="small"
-                    icon="mdi-thumb-down"
-                    class="me-2"
-                    @click="declineBookingScheduleOption(item)"
-                  >
-                  </v-icon>
-                  -->
-                  actions 
                 </template>                  
               </v-data-table>
             </div>
@@ -297,7 +300,11 @@ export default {
             scheduleMinutes: [],            
             addScheduleOption_scheduleDate: null,
             addScheduleOption_scheduleHour: null,
-            addScheduleOption_scheduleMinute: null         
+            addScheduleOption_scheduleMinute: null,
+
+            // Remove Option
+            showRemoveScheduleOption: false,
+            bookingScheduleOptionToRemove: null
         }
     },
     methods: {
@@ -453,10 +460,6 @@ export default {
           this.addScheduleOption_scheduleHour = null;
           this.addScheduleOption_scheduleMinute = null;
 
-
-
-          // TODO: show confirm
-          console.log("Good");
         } catch (error) {
           console.error('Error:', error);
           if (error.response && error.response.data.detail) {
@@ -466,8 +469,30 @@ export default {
           }
           this.showErrorAlert = true;
         } 
-      }
-      
+      },
+      canEditBookingScheduleOption(bso) {
+        return bso.can_edit_booking_schedule_option_practitioner;
+      },      
+      showRemoveScheduleOptionDialogForBookingScheduleOption(bso) {
+        this.showRemoveScheduleOption = true;
+        this.bookingScheduleOptionToRemove = bso;
+      },
+      async removeScheduleOption() {
+        this.showRemoveScheduleOption = false;
+        let headers = await api.getApiHeaders();
+        try {
+          await axios.delete(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/delete-booking-schedule-option/' + this.bookingScheduleOptionToRemove.booking_schedule_option_id), { headers });
+          await this.loadRefresh();
+        } catch (error) {
+          console.error('Error:', error);
+          if (error.response && error.response.data.detail) {
+            this.errorMessage = error.response.data.detail;
+          } else {
+            this.errorMessage = 'Unable to remove booking-schedule-option';
+          }
+          this.showErrorAlert = true;
+        } 
+      }     
     },
     async mounted() {
         this.code = this.$route.path.replace("/", "");
