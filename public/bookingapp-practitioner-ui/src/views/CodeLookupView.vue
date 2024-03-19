@@ -93,7 +93,7 @@
                 <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
 
 
-                <v-btn style = 'margin-top:10px;' :disabled="!canAddScheduleOption()" color="primary" @click="addScheduleOption">Submit Option</v-btn>
+                <v-btn style = 'margin-top:10px;' :disabled="!canAddScheduleOption()" color="primary" @click="addScheduleOption">{{ bookingScheduleOptions.length ? 'Submit Another Option' : 'Submit Option' }}</v-btn>
 
               </v-col>
             </v-row>
