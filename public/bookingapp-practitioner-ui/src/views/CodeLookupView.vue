@@ -121,7 +121,7 @@
               <h3>Your Options</h3>
 
               <v-data-table
-                :headers="scheduleOptions_headers"
+                :headers="getOptionHeaders()"
                 :items="bookingScheduleOptions"
                 :sort-by="[{ key: 'schedule_date', order: 'asc' }]"
                 density="compact"
@@ -314,7 +314,7 @@ export default {
       resetNotifications() {
         this.showErrorAlert = false;
         this.errorMessage = '';
-      },
+      },      
       async load() {
         let headers = await api.getApiHeaders();
         try {
@@ -395,7 +395,21 @@ export default {
           await this.loadScheduleOptions();
         }
         this.isLoading = false;
-      },    
+      },   
+      getOptionHeaders() {
+        let hasActions = false;
+        for (let oitem of this.bookingScheduleOptions) {
+          if (oitem.can_edit_booking_schedule_option_practitioner) {
+            hasActions = true;
+            break;
+          }
+        }
+        if (hasActions) {
+          return this.scheduleOptions_headers;
+        } else {
+          return this.scheduleOptions_headers.filter(o => o.key !== 'actions');
+        }
+      },
       openInGoogleMaps() {
         window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(this.booking.address_string), '_blank');
       },
