@@ -28,8 +28,8 @@
               ></v-textarea>
             </v-card-text>
             <v-card-actions>
-              <v-btn @click="showDeclineBooking = false">Cancel</v-btn>
-              <v-btn color="primary" @click="declineBooking">Decline</v-btn>
+              <v-btn @click="showDeclineBooking = false" :disabled="updateUnderway">Cancel</v-btn>
+              <v-btn color="primary" @click="declineBooking" :disabled="updateUnderway">Decline</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -44,8 +44,8 @@
               <p>Are you sure?</p>
             </v-card-text>
             <v-card-actions>
-              <v-btn @click="showRemoveScheduleOption = false">Cancel</v-btn>
-              <v-btn color="primary" @click="removeScheduleOption()">Remove</v-btn>
+              <v-btn @click="showRemoveScheduleOption = false" :disabled="updateUnderway">Cancel</v-btn>
+              <v-btn color="primary" @click="removeScheduleOption()" :disabled="updateUnderway">Remove</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -104,12 +104,11 @@
                   
                   <p>The duration of this treatment is {{ booking.treatment_duration_minutes }} mins.</p>
                 
-                <p>Preferred Service Date: {{ booking.preferred_service_date }} </p>
+                  <p style = 'margin-top:10px;'>Preferred Service Date: {{ booking.preferred_service_date }} </p>
 
-                <p>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
+                  <p style = 'margin-top:10px;'>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
 
-
-                <v-btn style = 'margin-top:10px;' :disabled="!canAddScheduleOption()" color="primary" @click="addScheduleOption">{{ bookingScheduleOptions.length ? 'Submit Another Option' : 'Submit Option' }}</v-btn>
+                  <v-btn style = 'margin-top:10px;' :disabled="!canAddScheduleOption()||updateUnderway" color="primary" @click="addScheduleOption">{{ bookingScheduleOptions.length ? 'Submit Another Option' : 'Submit Option' }}</v-btn>
 
               </v-col>
             </v-row>
@@ -155,7 +154,7 @@
               </v-data-table>
             </div>
 
-            <v-btn v-if="booking_practitioner.can_decline_practitioner" size="small" color="primary" @click="showDeclineBooking=true">Decline Booking</v-btn>
+            <v-btn v-if="booking_practitioner.can_decline_practitioner" size="small" color="primary" @click="showDeclineBooking=true" :disabled="updateUnderway">Decline Booking</v-btn>
 
 
 
@@ -240,6 +239,7 @@ export default {
             booking: null,
             showErrorAlert: false,
             errorMessage: '',
+            updateUnderway: false,
 
             googleMapsApiKey: settings.googleMapsApiKey,
             mapCenter: { "lat": null, "lng": null },
@@ -416,10 +416,11 @@ export default {
       },
       async declineBooking() {
         this.showDeclineBooking = false;
+        this.updateUnderway = true;
         try {
           let headers = await api.getApiHeaders();
           await axios.put(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + "/decline"), { reason: this.declineReason }, { headers });
-          this.loadRefresh();
+          await this.loadRefresh();
         } catch (error) {
           console.error('Error:', error);
           if (error.response && error.response.data.detail) {
@@ -428,6 +429,8 @@ export default {
             this.errorMessage = 'Unable to decline booking.';
           }
           this.showErrorAlert = true;        
+        } finally {
+          this.updateUnderway = false;
         }
       },
       canAddScheduleOption() {
@@ -465,6 +468,7 @@ export default {
           schedule_date: api.prepareDateTime(dt)
         };
 
+        this.updateUnderway = true;
         let headers = await api.getApiHeaders();
         try {
           await axios.post(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/create-booking-schedule-option'), data, { headers });
@@ -483,7 +487,9 @@ export default {
             this.errorMessage = 'Unable to create booking-schedule-option';
           }
           this.showErrorAlert = true;
-        } 
+        } finally {
+          this.updateUnderway = false;
+        }
       },
       canEditBookingScheduleOption(bso) {
         return bso.can_edit_booking_schedule_option_practitioner;
@@ -494,6 +500,7 @@ export default {
       },
       async removeScheduleOption() {
         this.showRemoveScheduleOption = false;
+        this.updateUnderway = true;
         let headers = await api.getApiHeaders();
         try {
           await axios.delete(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/delete-booking-schedule-option/' + this.bookingScheduleOptionToRemove.booking_schedule_option_id), { headers });
@@ -506,7 +513,9 @@ export default {
             this.errorMessage = 'Unable to remove booking-schedule-option';
           }
           this.showErrorAlert = true;
-        } 
+        } finally {
+          this.updateUnderway = false;
+        }
       },
       getRowPropsForBookingScheduleOption(data) {
         return {
