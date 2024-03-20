@@ -126,6 +126,7 @@
                 :sort-by="[{ key: 'schedule_date', order: 'asc' }]"
                 density="compact"
                 :items-per-page="100"
+                :row-props="getRowPropsForBookingScheduleOption"                
               >
               <template v-slot:bottom> </template>
               <!-- eslint-disable-next-line -->
@@ -506,7 +507,14 @@ export default {
           }
           this.showErrorAlert = true;
         } 
-      }     
+      },
+      getRowPropsForBookingScheduleOption(data) {
+        return {
+          'class': {
+            'highlight-selected-row': data.item.current_status == 'selected'
+          }
+        }
+      }   
     },
     async mounted() {
         this.code = this.$route.path.replace("/", "");
@@ -514,3 +522,9 @@ export default {
     }
 };
 </script>
+<style>
+
+.highlight-selected-row {
+  background-color: #c5ffb5;
+}
+</style>
