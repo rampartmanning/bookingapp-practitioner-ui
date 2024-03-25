@@ -72,16 +72,17 @@
             <!-- create new option -->
             <div v-if="booking.can_create_booking_schedule_option_practitioner&&booking_practitioner.can_create_booking_schedule_option_practitioner">
               <h3>Provide a Schedule Option</h3>
+
+             
               <v-row>
                 <v-col cols="6">
-                  <v-date-picker v-model="addScheduleOption_scheduleDate" 
-                    title="Service Date" 
-                    :show-adjacent-months="true"
-                    :allowed-dates="booking_configuration.selectable_allowed_schedule_option_dates"></v-date-picker>
-                </v-col>
-                <v-col cols="6">
-
-                  <v-row>
+                  <VDatePicker v-model="addScheduleOption_scheduleDate" 
+                      expanded 
+                      view="weekly"
+                      :min-date="booking_configuration.selectable_allowed_schedule_option_dates[0]"
+                      :max-date="booking_configuration.selectable_allowed_schedule_option_dates[booking_configuration.selectable_allowed_schedule_option_dates.length - 1]"
+                    />
+                    <v-row style = 'margin-top:10px;'>
                     <v-col cols="6">
                       <v-select
                         v-model="addScheduleOption_scheduleHour"
@@ -100,8 +101,10 @@
                         dense
                       ></v-select>
                     </v-col>
-                  </v-row>                    
-                  
+                  </v-row>
+                </v-col>
+                <v-col cols="6">
+
                   <p>The duration of this treatment is {{ booking.treatment_duration_minutes }} mins.</p>
                 
                   <p style = 'margin-top:10px;'>Preferred Service Date: {{ booking.preferred_service_date }} </p>
