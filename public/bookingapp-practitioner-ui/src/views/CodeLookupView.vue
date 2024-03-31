@@ -1,6 +1,6 @@
 <template>
     <v-container>
-      <v-sheet width="1000">
+      <v-sheet>
         <v-row>
           <v-col cols="6" class="text-left">
             <!-- Logo -->         
@@ -72,95 +72,97 @@
             <!-- create new option -->
             <div v-if="booking.can_create_booking_schedule_option_practitioner&&booking_practitioner.can_create_booking_schedule_option_practitioner">
               <h3>Provide a Schedule Option</h3>
-
              
               <v-row>
-                <v-col cols="6">
+                <v-col cols="12">
                   <VDatePicker v-model="addScheduleOption_scheduleDate" 
                       expanded 
                       view="weekly"
                       :min-date="booking_configuration.selectable_allowed_schedule_option_dates[0]"
                       :max-date="booking_configuration.selectable_allowed_schedule_option_dates[booking_configuration.selectable_allowed_schedule_option_dates.length - 1]"
                     />
-                    <v-row style = 'margin-top:10px;'>
-                    <v-col cols="6">
-                      <v-select
-                        v-model="addScheduleOption_scheduleHour"
-                        :items="scheduleHours"
-                        label="Hour"
-                        persistent-hint
-                        dense
-                      ></v-select>
-                    </v-col>
-                    <v-col cols="6">
-                      <v-select
-                        v-model="addScheduleOption_scheduleMinute"
-                        :items="scheduleMinutes"
-                        label="Minute"
-                        persistent-hint
-                        dense
-                      ></v-select>
-                    </v-col>
-                  </v-row>
+                </v-col>  
+              </v-row>
+
+              <v-row>
+                <v-col cols="12">
+                  <v-select
+                      v-model="addScheduleOption_scheduleHour"
+                      :items="scheduleHours"
+                      label="Hour"
+                      persistent-hint
+                      dense
+                    ></v-select>
                 </v-col>
-                <v-col cols="6">
+              </v-row>
 
+              <v-row>
+                <v-col cols="12">
+                    <v-select
+                      v-model="addScheduleOption_scheduleMinute"
+                      :items="scheduleMinutes"
+                      label="Minute"
+                      persistent-hint
+                      dense
+                    ></v-select>
+                </v-col>                  
+              </v-row>
+
+              <v-row>
+                <v-col cols="12">
                   <p>The duration of this treatment is {{ booking.treatment_duration_minutes }} mins.</p>
-                
                   <p style = 'margin-top:10px;'>Preferred Service Date: {{ booking.preferred_service_date }} </p>
-
                   <p style = 'margin-top:10px;'>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
-
                   <v-btn style = 'margin-top:10px;' :disabled="!canAddScheduleOption()||updateUnderway" color="primary" @click="addScheduleOption">{{ bookingScheduleOptions.length ? 'Submit Another Option' : 'Submit Option' }}</v-btn>
+                </v-col>
+              </v-row>
 
-              </v-col>
-            </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <v-btn v-if="booking_practitioner.can_decline_practitioner" size="small" color="primary" @click="showDeclineBooking=true" :disabled="updateUnderway">Decline Booking</v-btn>
+                </v-col>
+              </v-row>
 
             </div>
 
-            <div style="margin-top:20px;" class = 'data-table-wrapper' v-if="bookingScheduleOptions.length">
+            <div style="margin-top:10px;" class = 'data-table-wrapper' v-if="bookingScheduleOptions.length">
 
               <h3>Your Options</h3>
 
-              <v-data-table
-                :headers="getOptionHeaders()"
-                :items="bookingScheduleOptions"
-                :sort-by="[{ key: 'schedule_date', order: 'asc' }]"
-                density="compact"
-                :items-per-page="100"
-                :row-props="getRowPropsForBookingScheduleOption"                
-              >
-              <template v-slot:bottom> </template>
-              <!-- eslint-disable-next-line -->
-              <template v-slot:item.schedule_date_date="{ item }">
-                  <code>{{ formatDate(item.schedule_date_date, 'PP') }}</code>
-              </template>
-              <!-- eslint-disable-next-line -->
-              <template v-slot:item.schedule_date_time="{ item }">
-                <code>{{ formatDate(item.schedule_date_time, 'p') }}</code>
-              </template>
-              <!-- eslint-disable-next-line -->
-              <template v-slot:item.schedule_date_end_time="{ item }">
-                <code>{{ formatDate(item.schedule_date_end, 'p') }}</code>
-              </template>
-              <!-- eslint-disable-next-line -->
-                <template v-slot:item.actions="{ item }">
-                  <v-icon
-                    v-if="canEditBookingScheduleOption(item)"
-                    size="small"
-                    icon="mdi-close"
-                    class="me-2"
-                    @click="showRemoveScheduleOptionDialogForBookingScheduleOption(item)"
-                  >
-                  </v-icon>
-                </template>                  
-              </v-data-table>
+              <div v-for="item in bookingScheduleOptions" :key="item.booking_schedule_option_id">
+
+                <v-table density="compact">
+                  <tbody>
+                    <tr>
+                      <td width = '25%'>Date</td>
+                      <td width = '75%'>{{ formatDate(item.schedule_date_date, 'PP') }}</td>
+                    </tr>
+                    <tr>
+                      <td>Start</td>
+                      <td>{{ formatDate(item.schedule_date_time, 'p') }}</td>
+                    </tr>
+                    <tr>
+                      <td>End</td>
+                      <td>{{ formatDate(item.schedule_date_end, 'p') }}</td>
+                    </tr>
+                    <tr>
+                      <td>Status</td>
+                      <td>{{ item.current_status_end_label }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+
+                <v-btn
+                  style="margin-bottom:20px;"
+                  v-if="canEditBookingScheduleOption(item)"
+                  size="small"
+                  color="primary"
+                  @click="showRemoveScheduleOptionDialogForBookingScheduleOption(item)"
+                >Remove</v-btn>
+              </div>
+
             </div>
-
-            <v-btn v-if="booking_practitioner.can_decline_practitioner" size="small" color="primary" @click="showDeclineBooking=true" :disabled="updateUnderway">Decline Booking</v-btn>
-
-
-
+            
 
             <h3 style = 'margin-top:10px;'>Booking Details</h3>
 
