@@ -129,36 +129,66 @@
 
               <h3>Your Options</h3>
 
+              <!-- the selected option if it exists -->
               <div v-for="item in bookingScheduleOptions" :key="item.booking_schedule_option_id">
 
-                <v-table density="compact">
-                  <tbody>
-                    <tr>
-                      <td width = '25%'>Date</td>
-                      <td width = '75%'>{{ formatDate(item.schedule_date_date, 'PP') }}</td>
-                    </tr>
-                    <tr>
-                      <td>Start</td>
-                      <td>{{ formatDate(item.schedule_date_time, 'p') }}</td>
-                    </tr>
-                    <tr>
-                      <td>End</td>
-                      <td>{{ formatDate(item.schedule_date_end, 'p') }}</td>
-                    </tr>
-                    <tr>
-                      <td>Status</td>
-                      <td>{{ item.current_status_end_label }}</td>
-                    </tr>
-                  </tbody>
-                </v-table>
+                <div v-if="item.current_status == 'selected'" style = 'margin-bottom:30px;'>
+                  <v-table density="compact" v-if="item.current_status == 'selected'">
+                    <tbody>
+                      <tr>
+                        <td width = '25%'>Date</td>
+                        <td width = '75%'>{{ formatDate(item.schedule_date_date, 'PP') }}</td>
+                      </tr>
+                      <tr>
+                        <td>Start</td>
+                        <td>{{ formatDate(item.schedule_date_time, 'p') }}</td>
+                      </tr>
+                      <tr>
+                        <td>End</td>
+                        <td>{{ formatDate(item.schedule_date_end, 'p') }}</td>
+                      </tr>
+                      <tr>
+                        <td>Status</td>
+                        <td>{{ item.current_status_end_label }}</td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
+              
+              </div>
 
-                <v-btn
-                  style="margin-bottom:20px;"
-                  v-if="canEditBookingScheduleOption(item)"
-                  size="small"
-                  color="primary"
-                  @click="showRemoveScheduleOptionDialogForBookingScheduleOption(item)"
-                >Remove</v-btn>
+              <div v-for="item in bookingScheduleOptions" :key="item.booking_schedule_option_id">
+
+                <div v-if="item.current_status != 'selected'" style = 'margin-bottom:30px;'>
+                  <v-table density="compact">
+                    <tbody>
+                      <tr>
+                        <td width = '25%'>Date</td>
+                        <td width = '75%'>{{ formatDate(item.schedule_date_date, 'PP') }}</td>
+                      </tr>
+                      <tr>
+                        <td>Start</td>
+                        <td>{{ formatDate(item.schedule_date_time, 'p') }}</td>
+                      </tr>
+                      <tr>
+                        <td>End</td>
+                        <td>{{ formatDate(item.schedule_date_end, 'p') }}</td>
+                      </tr>
+                      <tr>
+                        <td>Status</td>
+                        <td>{{ item.current_status_end_label }}</td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+
+                  <v-btn
+                    style="margin-bottom:20px;"
+                    v-if="canEditBookingScheduleOption(item)"
+                    size="small"
+                    color="primary"
+                    @click="showRemoveScheduleOptionDialogForBookingScheduleOption(item)"
+                  >Remove</v-btn>
+                </div>
               </div>
 
             </div>
