@@ -386,8 +386,11 @@ export default {
         try {
           let response = await axios.get(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/configuration'), { headers });
           this.booking_configuration = response.data.configuration;
-
-          console.log("booking_configuration", this.booking_configuration);
+          this.booking_configuration.selectable_allowed_schedule_option_dates = this.booking_configuration.selectable_allowed_schedule_option_dates.map(d => {
+              const date = new Date(d);
+              const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
+              return localDate;
+          });
 
           // update schedule minutes
           this.scheduleMinutes = [];
