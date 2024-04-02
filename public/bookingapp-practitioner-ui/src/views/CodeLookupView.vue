@@ -56,6 +56,7 @@
           type="error"
           title="Error"
           :text="'There was an error doing this operation. Message: ' + errorMessage"
+          closable
         ></v-alert>
         
 
