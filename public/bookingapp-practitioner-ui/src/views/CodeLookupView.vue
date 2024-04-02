@@ -75,6 +75,14 @@
              
               <v-row>
                 <v-col cols="12">
+                  <p>The duration of this treatment is {{ booking.treatment_duration_minutes }} mins.</p>
+                  <p style = 'margin-top:10px;'>Preferred Service Date: {{ booking.preferred_service_date }} </p>
+                  <p style = 'margin-top:10px;'>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
+                </v-col>
+              </v-row>
+
+              <v-row>
+                <v-col cols="12">
                   <VDatePicker v-model="addScheduleOption_scheduleDate" 
                       expanded 
                       view="weekly"
@@ -110,16 +118,13 @@
 
               <v-row>
                 <v-col cols="12">
-                  <p>The duration of this treatment is {{ booking.treatment_duration_minutes }} mins.</p>
-                  <p style = 'margin-top:10px;'>Preferred Service Date: {{ booking.preferred_service_date }} </p>
-                  <p style = 'margin-top:10px;'>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
-                  <v-btn style = 'margin-top:10px;' :disabled="!canAddScheduleOption()||updateUnderway" color="primary" @click="addScheduleOption">{{ bookingScheduleOptions.length ? 'Submit Another Option' : 'Submit Option' }}</v-btn>
+                  <v-btn :disabled="!canAddScheduleOption()||updateUnderway" color="primary" @click="addScheduleOption">{{ bookingScheduleOptions.length ? 'Submit Another Option' : 'Submit Option' }}</v-btn>
                 </v-col>
-              </v-row>
+              </v-row>              
 
-              <v-row>
+              <v-row v-if="booking_practitioner.can_decline_practitioner">
                 <v-col cols="12">
-                  <v-btn v-if="booking_practitioner.can_decline_practitioner" size="small" color="primary" @click="showDeclineBooking=true" :disabled="updateUnderway">Decline Booking</v-btn>
+                  <v-btn size="small" color="primary" @click="showDeclineBooking=true" :disabled="updateUnderway">Decline Booking</v-btn>
                 </v-col>
               </v-row>
 
@@ -127,7 +132,7 @@
 
             <div style="margin-top:10px;" class = 'data-table-wrapper' v-if="bookingScheduleOptions.length">
 
-              <h3>Your Options</h3>
+              <h3 v-if="hasSelectedOption()">Selected Option</h3>
 
               <!-- the selected option if it exists -->
               <div v-for="item in bookingScheduleOptions" :key="item.booking_schedule_option_id">
@@ -156,6 +161,10 @@
                 </div>
               
               </div>
+
+              <h3 v-if="hasSelectedOption()&&hasNonSelectedOptions()">Other Options</h3>
+
+              <h3 v-if="!hasSelectedOption()&&hasNonSelectedOptions()">Your Options</h3>
 
               <div v-for="item in bookingScheduleOptions" :key="item.booking_schedule_option_id">
 
@@ -194,7 +203,7 @@
             </div>
             
 
-            <h3 style = 'margin-top:10px;'>Booking Details</h3>
+            <h3 style = 'margin-top:20px;'>Booking Details</h3>
 
 
             <v-table density="compact">
@@ -202,18 +211,6 @@
                 <tr>
                   <td width = '25%'>Treatment</td>
                   <td width = '75%'>{{ booking.treatment_display_name }}</td>
-                </tr>
-                <tr>
-                  <td>Duration</td>
-                  <td>{{ booking.duration_minutes }} mins</td>
-                </tr> 
-                <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
-                  <td>Preferred Service Date</td>
-                  <td>{{ booking.preferred_service_date }}</td>
-                </tr>
-                <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
-                  <td>Scheduling Preferences</td>
-                  <td>{{ booking.scheduling_preferences.join(", ") }}</td>
                 </tr>
                 <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
                   <td>Client Notes</td>
@@ -432,6 +429,12 @@ export default {
         }
         this.isLoading = false;
       },   
+      hasSelectedOption() {
+        return !!this.bookingScheduleOptions.find(option => option.current_status == 'selected');
+      },
+      hasNonSelectedOptions() {
+        return !!this.bookingScheduleOptions.find(option => option.current_status != 'selected');
+      },      
       getOptionHeaders() {
         let hasActions = false;
         for (let oitem of this.bookingScheduleOptions) {
