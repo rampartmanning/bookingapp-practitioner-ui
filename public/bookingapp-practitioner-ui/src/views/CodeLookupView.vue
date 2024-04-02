@@ -69,17 +69,61 @@
 
           <v-sheet style = 'margin-top:10px;'>
 
+            <h3 style = 'margin-top:20px;'>Booking Details</h3>
+
+            <div style = 'margin-bottom:20px;'>
+              <v-table density="compact">
+                <tbody>
+                  <tr>
+                    <td width = '30%'>Treatment</td>
+                    <td width = '70%'>{{ booking.treatment_display_name }}</td>
+                  </tr>
+                  <tr>
+                    <td>Duration</td>
+                    <td>{{ booking.treatment_duration_minutes }} mins</td>
+                  </tr>
+                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                    <td>Preferred Service Date</td>
+                    <td>{{ formatDate(booking.preferred_service_date, "PP") }}</td>
+                  </tr>                
+                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                    <td>Scheduling Preferences</td>
+                    <td>{{ booking.scheduling_preferences.join(", ") }}</td>
+                  </tr>  
+                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                    <td>Client Notes</td>
+                    <td>{{ booking.client_notes }}</td>
+                  </tr>
+                  <tr>
+                    <td>Address</td>
+                    <td>{{ booking.address_string }}
+                      <v-icon color="primary" @click="openInGoogleMaps()">mdi-open-in-new</v-icon>
+                    </td>
+                  </tr>                
+                </tbody>
+              </v-table>
+
+              <GoogleMap
+                :api-key="googleMapsApiKey"
+                :center="mapCenter"
+                :zoom="mapZoom"
+                style="width: 100%; height: 400px; margin-top:10px;"
+                :options="{
+                    disableDefaultUI: true,
+                    zoomControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: false
+                }">
+                  <Marker :options="mapMarkerOptions" />
+
+              </GoogleMap>
+
+            </div>
+
+
             <!-- create new option -->
             <div v-if="booking.can_create_booking_schedule_option_practitioner&&booking_practitioner.can_create_booking_schedule_option_practitioner">
               <h3>Provide a Schedule Option</h3>
-             
-              <v-row>
-                <v-col cols="12">
-                  <p>The duration of this treatment is {{ booking.treatment_duration_minutes }} mins.</p>
-                  <p style = 'margin-top:10px;'>Preferred Service Date: {{ formatDate(booking.preferred_service_date, "PP") }} </p>
-                  <p style = 'margin-top:10px;'>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
-                </v-col>
-              </v-row>
 
               <v-row>
                 <v-col cols="12">
@@ -203,42 +247,7 @@
             </div>
             
 
-            <h3 style = 'margin-top:20px;'>Booking Details</h3>
 
-
-            <v-table density="compact">
-              <tbody>
-                <tr>
-                  <td width = '25%'>Treatment</td>
-                  <td width = '75%'>{{ booking.treatment_display_name }}</td>
-                </tr>
-                <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
-                  <td>Client Notes</td>
-                  <td>{{ booking.client_notes }}</td>
-                </tr>
-                <tr>
-                  <td>Address</td>
-                  <td>{{ booking.address_string }}
-                    <v-icon color="primary" @click="openInGoogleMaps()">mdi-open-in-new</v-icon>
-                  </td>
-                </tr>                
-              </tbody>
-            </v-table>
-
-            <GoogleMap
-              :api-key="googleMapsApiKey"
-              :center="mapCenter"
-              :zoom="mapZoom"
-              style="width: 100%; height: 600px; margin-top:10px;"
-              :options="{
-                  disableDefaultUI: true,
-                  zoomControl: true,
-                  streetViewControl: true,
-                  fullscreenControl: false
-              }">
-                <Marker :options="mapMarkerOptions" />
-
-            </GoogleMap>
 
           </v-sheet>
 
