@@ -76,7 +76,7 @@
               <v-row>
                 <v-col cols="12">
                   <p>The duration of this treatment is {{ booking.treatment_duration_minutes }} mins.</p>
-                  <p style = 'margin-top:10px;'>Preferred Service Date: {{ booking.preferred_service_date }} </p>
+                  <p style = 'margin-top:10px;'>Preferred Service Date: {{ formatDate(booking.preferred_service_date, "PP") }} </p>
                   <p style = 'margin-top:10px;'>Scheduling Preferences: {{ booking.scheduling_preferences.join(", ") }}</p>
                 </v-col>
               </v-row>
@@ -376,6 +376,8 @@ export default {
         try {
           let response = await axios.get(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/configuration'), { headers });
           this.booking_configuration = response.data.configuration;
+
+          console.log("booking_configuration", this.booking_configuration);
 
           // update schedule minutes
           this.scheduleMinutes = [];
