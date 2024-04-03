@@ -1,4 +1,6 @@
 import { createApp } from 'vue';
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 import App from './App.vue';
 
 import { createRouter, createWebHistory } from 'vue-router'; 
