@@ -100,7 +100,11 @@
                     <td>{{ booking.address_string }}
                       <v-icon color="primary" @click="openInGoogleMaps()">mdi-open-in-new</v-icon>
                     </td>
-                  </tr>                
+                  </tr>        
+                  <tr>
+                    <td>Unit Number</td>
+                    <td>{{ booking.unit_number || "None" }}</td>        
+                  </tr>
                 </tbody>
               </v-table>
 
