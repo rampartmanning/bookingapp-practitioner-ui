@@ -135,31 +135,19 @@
                   <VDatePicker v-model="addScheduleOption_scheduleDate" 
                       expanded 
                       view="weekly"
-                      :min-date="booking_configuration.selectable_allowed_schedule_option_dates[0]"
-                      :max-date="booking_configuration.selectable_allowed_schedule_option_dates[booking_configuration.selectable_allowed_schedule_option_dates.length - 1]"
+                      :min-date="booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__dates[0]"
+                      :max-date="booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__dates[booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__dates.length - 1]"
                     />
                 </v-col>  
               </v-row>
 
 
 
-              <v-row v-if="addScheduleOption_scheduleDate">
+              <v-row>
                 <v-col cols="12">
-                  <p>
-                    Today: {{ isTodaySelected() ? "Yes" : "No" }}
-
-                  </p>
                   <v-select                
-                      v-if="isTodaySelected()"  
                       v-model="addScheduleOption_scheduleHour"
-                      :items="scheduleHoursToday"
-                      label="Hour"
-                      persistent-hint
-                      dense
-                    ></v-select>
-                  <v-select                
-                      v-if="!isTodaySelected()"  
-                      v-model="addScheduleOption_scheduleHour"
+                      :disabled="!addScheduleOption_scheduleDate"
                       :items="scheduleHours"
                       label="Hour"
                       persistent-hint
@@ -168,10 +156,11 @@
                 </v-col>
               </v-row>
 
-              <v-row v-if="addScheduleOption_scheduleDate">
+              <v-row>
                 <v-col cols="12">
                     <v-select
                       v-model="addScheduleOption_scheduleMinute"
+                      :disabled="!addScheduleOption_scheduleDate"
                       :items="scheduleMinutes"
                       label="Minute"
                       persistent-hint
@@ -310,8 +299,9 @@ export default {
             booking_configuration: {
               schedule_option_timezone: "",
               schedule_option_minute_interval: null,
-              selectable_allowed_schedule_option_today_date: null,
-              selectable_allowed_schedule_option_dates: [],
+              selectable_allowed_schedule_option_dates_and_start_hours: [],
+              selectable_allowed_schedule_option_dates_and_start_hours__dates: [],
+              selectable_allowed_schedule_option_dates_and_start_hours__hour_lookup: {},
               schedule_option_hour_of_earliest_start: null,
               schedule_option_hour_of_latest_start: null,
               hst_rate: null,
@@ -360,7 +350,6 @@ export default {
 
             // Create Booking Schedule Option 
             scheduleHours: [],
-            scheduleHoursToday: [],
             scheduleMinutes: [],            
             addScheduleOption_scheduleDate: null,
             addScheduleOption_scheduleHour: null,
@@ -406,47 +395,22 @@ export default {
         let headers = await api.getApiHeaders();
         try {
           let response = await axios.get(api.getApiUrl('p/booking-practitioner/by_code/' + this.code + '/configuration'), { headers });
-          this.booking_configuration = response.data.configuration;          
-          this.booking_configuration.selectable_allowed_schedule_option_dates = this.booking_configuration.selectable_allowed_schedule_option_dates.map(d => {
-              const date = new Date(d);
-              const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
-              return localDate;
-          });
-
-          let dtToday = new Date();
-          dtToday = new Date(dtToday.toLocaleString("en-US", { timeZone: this.booking_configuration.schedule_option_timezone }));          
+          this.booking_configuration = response.data.configuration;    
           
-          for(let i = 0; i < this.booking_configuration.selectable_allowed_schedule_option_dates.length; i++) {
-            // set today
-            if (this.booking_configuration.selectable_allowed_schedule_option_dates[i].toDateString() === dtToday.toDateString()) {
-              this.booking_configuration.selectable_allowed_schedule_option_today_date = this.booking_configuration.selectable_allowed_schedule_option_dates[i];
-              break;
-            }
-          }         
+          this.booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__dates = [];
+          this.booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__hour_lookup = {};
+
+          this.booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours.forEach(d => {
+            const date = new Date(d.date);
+            const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
+            this.booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__dates.push(localDate);
+            this.booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__hour_lookup[localDate] = d.start_hour;
+          });
 
           // update schedule minutes
           this.scheduleMinutes = [];
           for(let i = 0; i < 60; i+=this.booking_configuration.schedule_option_minute_interval) {
             this.scheduleMinutes.push(i < 10 ? '0' + i : '' + i);
-          }
-
-          this.scheduleHours = [];
-          for(let i = this.booking_configuration.schedule_option_hour_of_earliest_start; i <= this.booking_configuration.schedule_option_hour_of_latest_start; i++) {
-            this.scheduleHours.push(i < 10 ? '0' + i : '' + i);
-          }
-
-          this.scheduleHoursToday = [];
-          if(!this.booking_configuration.selectable_allowed_schedule_option_today_date) {
-            this.scheduleHoursToday = this.scheduleHours;
-          } else {
-            for(let i = this.booking_configuration.schedule_option_hour_of_earliest_start; i <= this.booking_configuration.schedule_option_hour_of_latest_start; i++) {
-              if (i > dtToday.getHours()) {
-                this.scheduleHoursToday.push(i < 10 ? '0' + i : '' + i);
-              }            
-            }
-            if(this.scheduleHoursToday.length == 0) {
-              this.booking_configuration.selectable_allowed_schedule_option_dates.shift();              
-            }       
           }
 
         } catch (error) {
@@ -459,14 +423,6 @@ export default {
           this.showErrorAlert = true;
         }
       },
-
-      isTodaySelected() {
-        if (!this.addScheduleOption_scheduleDate) {
-          return false;
-        }
-        return this.addScheduleOption_scheduleDate.toDateString() == this.booking_configuration.selectable_allowed_schedule_option_today_date.toDateString();
-      },
-
       async loadScheduleOptions() {
         let headers = await api.getApiHeaders();
         try {
@@ -634,6 +590,18 @@ export default {
     async mounted() {
         this.code = this.$route.path.replace("/", "");
         await this.loadRefresh();
+    },
+    watch: {
+      addScheduleOption_scheduleDate: function(val) {
+        if(val) {
+            this.addScheduleOption_scheduleHour = null;
+            let start_hour = this.booking_configuration.selectable_allowed_schedule_option_dates_and_start_hours__hour_lookup[val];
+            this.scheduleHours = [];
+            for(let i = start_hour; i <= this.booking_configuration.schedule_option_hour_of_latest_start; i++) {
+              this.scheduleHours.push(i < 10 ? '0' + i : '' + i);
+            }
+        }
+      }, 
     }
 };
 </script>
