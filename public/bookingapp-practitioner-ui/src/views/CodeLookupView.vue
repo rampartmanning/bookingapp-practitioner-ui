@@ -128,7 +128,7 @@
 
             <!-- create new option -->
             <div v-if="booking.can_create_booking_schedule_option_practitioner&&booking_practitioner.can_create_booking_schedule_option_practitioner">
-              <h3>Provide a Schedule Option</h3>
+              <h3>Please Provide a few Availability Options</h3>
 
               <v-row>
                 <v-col cols="12">
