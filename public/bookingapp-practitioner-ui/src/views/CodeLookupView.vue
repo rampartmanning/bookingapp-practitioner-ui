@@ -83,14 +83,25 @@
                     <td>Duration</td>
                     <td>{{ booking.treatment_duration_minutes }} mins</td>
                   </tr>
-                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                  <!-- Old Fields -->
+                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'&&booking.preferred_service_date!=null">
                     <td>Preferred Service Date</td>
                     <td>{{ formatDate(booking.preferred_service_date, "PP") }}</td>
                   </tr>                
-                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
+                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'&&booking.scheduling_preferences!=null">
                     <td>Scheduling Preferences</td>
                     <td>{{ booking.scheduling_preferences.join(", ") }}</td>
                   </tr>  
+                  <!-- New Fields -->
+                  <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'&&booking.scheduling_preferences_by_day!=null&&booking.scheduling_preferences_by_day.length>0">
+                    <td>Preferred Service Dates</td>
+                    <td>
+                        <div v-for="pref in booking.scheduling_preferences_by_day" :key="pref.date">
+                            {{ formatDate(pref.date, "PP") }}: {{ pref.scheduling_preferences.join(", ") }}
+                        </div>                    
+                    </td>
+                  </tr>
+
                   <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'">
                     <td>Client Notes</td>
                     <td>{{ booking.client_notes }}</td>
