@@ -86,7 +86,7 @@
                   <!-- Old Fields -->
                   <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'&&booking.preferred_service_date!=null">
                     <td>Preferred Service Date</td>
-                    <td>{{ formatDate(booking.preferred_service_date, "PP") }}</td>
+                    <td>{{ formatDate(booking.preferred_service_date_dt, "PP") }}</td>
                   </tr>                
                   <tr v-if="booking_practitioner.current_status == 'waiting_for_practitioner'&&booking.scheduling_preferences!=null">
                     <td>Scheduling Preferences</td>
@@ -388,6 +388,8 @@ export default {
             this.booking_practitioner.expires_at = new Date(this.booking_practitioner.expires_at);
           }
           this.booking = response.data.booking;
+          this.booking.preferred_service_date_dt = new Date(this.booking.preferred_service_date);
+          this.booking.preferred_service_date_dt = new Date(this.booking.preferred_service_date_dt.getTime() + (this.booking.preferred_service_date_dt.getTimezoneOffset() * 60000));
           this.mapCenter.lat = this.booking.lat;
           this.mapCenter.lng = this.booking.lng;
           this.mapMarkerOptions.position.lat = this.booking.lat;
